@@ -1,6 +1,7 @@
 import os
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 from google.genai import types
@@ -47,12 +48,14 @@ def health_check():
         "service": "job-optimizer-api",
     }
 
+class GenerateRequest(BaseModel):
+    contents: list[dict]
+    system_instruction: dict | None = None
 
 @app.post("/generate")
-async def generate(request: Request):
+async def generate(request: GenerateRequest):
     try:
-        body = await request.json()
-
+        body = request.model_dump()
         contents = body.get("contents")
         system_instruction = body.get("system_instruction")
 
